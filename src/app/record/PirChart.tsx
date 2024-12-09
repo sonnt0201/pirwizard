@@ -12,6 +12,7 @@ import { PirRecord } from '@/models/client/PirRecord';
 // import { color } from 'chart.js/helpers';
 import { IGroup } from '@/interfaces/IGroup';
 import { DEFAULT_PIR_GROUP_ID, DEFAULT_SERVER_ADDRESS } from '@/constants';
+import { Stack, Typography } from '@mui/material';
 
 const DEFAULT_PIR_NUMBER = 5;
 
@@ -38,16 +39,17 @@ interface Props {
       }
 */
 
-const CHART_COLORS: string[] = ["red", 'green', "yellow", "blue", "purple"]
+const CHART_COLORS: string[] = ["red", 'green', "violet", "blue", "purple"]
 
-export const PirChart = ({capturing, pirs }: Props) => {
+export const PirChart = ({ capturing, pirs }: Props) => {
 
     const [chartData, setChartData] = useState<ChartData<"line", (number | Point | null)[], unknown>>({ labels: [], datasets: [] });
     const [pirRecords, setPirRecords] = useState<PirRecord[]>([]);
     const recordIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+    const [serverIOError, setServerIOError] = useState<boolean>(false);
 
-   
+
 
     // fetch data from server
     useEffect(() => {
@@ -153,10 +155,10 @@ export const PirChart = ({capturing, pirs }: Props) => {
             }
         }
         // setChartData(() => ());
-    },[pirRecords])
+    }, [pirRecords])
 
     const fetchRecordsWhenCapturing = () => {
-       
+
         if (!capturing) {
             if (recordIntervalRef.current) clearInterval(recordIntervalRef.current)
             return;
@@ -169,6 +171,19 @@ export const PirChart = ({capturing, pirs }: Props) => {
 
                 // console.log(response.data.payload)
 
+                if (!Array.isArray(response.data.payload)) {
+                    console.error({
+                        target: 'fetchRecordWhenCapturing',
+                        msg: 'Invalid response data payload'
+                    })
+
+                    if (!serverIOError) setServerIOError(true);
+
+                    return;
+                }
+
+                if (serverIOError) setServerIOError(false);
+
                 let data = response.data.payload.sort((a: EncodedPirRecord, b: EncodedPirRecord) => (a["timestamp"] - b["timestamp"]));
 
 
@@ -176,7 +191,7 @@ export const PirChart = ({capturing, pirs }: Props) => {
                 data = [...data,]
 
                 setPirRecords(() =>
-                  
+
                     data.map((datum: EncodedPirRecord) => new PirRecord({
                         id: datum["record_id"],
                         pir: datum["pir_id"],
@@ -193,8 +208,17 @@ export const PirChart = ({capturing, pirs }: Props) => {
 
     }
 
-    return <>
-
+    return <Stack direction={"column"} alignContent={"center"}>
+        
+        
+        
+        {serverIOError && <Typography
+            component={"p"}
+            color='white'
+            sx={{ fontWeight: "bolder", textAlign: "center", backgroundColor: "red", fontSize: 40 }}> IO Disk Error happened, check your server !  </Typography>}
+        
+        
+        
         <Chart type='line' data={updateChart()} />
-    </>
+    </Stack>
 }

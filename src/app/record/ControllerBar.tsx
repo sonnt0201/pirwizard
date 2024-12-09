@@ -126,14 +126,14 @@ export const ControllerBar = ({
 
 
 
-                    {!recording && <Button id="button start record" color="secondary" onClick={() => {
+                    {!recording  && <Button id="button start record" color="secondary" onClick={() => {
                         setRecording(true);
                         if (onRecordControlClick) onRecordControlClick("start");
                     }}
                         // disabled={isLoading}
                         startIcon={<CameraAltRounded />}
                         variant="contained"
-
+                        disabled={!isConnected}
                     >Ghi hình</Button>}
 
 

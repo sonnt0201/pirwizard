@@ -45,11 +45,14 @@ export class PirRecord implements IPirRecord {
     //      this._vols = value;
     // }
 
+    // Incominng timestamp is now in millisecs
     timeInMillisecs(): number[] {
         const times = [];
         const numberOfVols = this._vols.length;
-        for (let i = 0; i < 1000; i+= Math.floor(1000 / numberOfVols)) {
-            times.push(this._time * 1000 + i);
+        const step = Math.floor(1000 / numberOfVols)
+        for (let i = 0; i < 1000; i+= step) {
+            // times.push(this._time * 1000 + i);  // for old timestamp as seconds
+            times.push(this._time + i);
         }
         return times;
     }
