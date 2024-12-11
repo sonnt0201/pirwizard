@@ -19,8 +19,8 @@ const DEFAULT_PIR_NUMBER = 5;
 interface Props {
     capturing: boolean;
     // serverAddress: string;
-    pirs: IPir[]
-
+    pirs: IPir[],
+    onError?: (error: Error) => void
 }
 
 
@@ -41,7 +41,7 @@ interface Props {
 
 const CHART_COLORS: string[] = ["red", 'green', "violet", "blue", "purple"]
 
-export const PirChart = ({ capturing, pirs }: Props) => {
+export const PirChart = ({ capturing, pirs , onError}: Props) => {
 
     const [chartData, setChartData] = useState<ChartData<"line", (number | Point | null)[], unknown>>({ labels: [], datasets: [] });
     const [pirRecords, setPirRecords] = useState<PirRecord[]>([]);
@@ -207,6 +207,11 @@ export const PirChart = ({ capturing, pirs }: Props) => {
         }, 1000)
 
     }
+
+    // pass server error to parent
+    useEffect(() => {
+        if (serverIOError && onError) onError(new Error("IO Error")) 
+    }, [serverIOError])
 
     return <Stack direction={"column"} alignContent={"center"}>
         

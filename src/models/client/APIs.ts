@@ -1,5 +1,9 @@
+import { EncodedPirRecord } from '@/interfaces';
+import { IVideoInfo } from './../../interfaces/IVideoInfo';
 import { IPIR, IPirsOfGroupRes } from "@/interfaces/PIR";
 import axios from "axios";
+import { PirRecord } from './PirRecord';
+import { DEFAULT_PIR_GROUP_ID } from '@/constants';
 
 
 
@@ -51,6 +55,21 @@ class APIsClass {
             
             return [];
         }
+    }
+
+    async getRecordsMatchingWithVideo(videoInfo: IVideoInfo): Promise<PirRecord[]> {
+        const res = await axios.get(`http://localhost:8080/api/records?group=${DEFAULT_PIR_GROUP_ID}&begin=${Math.floor(videoInfo.beginTimestamp)}&end=${Math.floor(videoInfo.endTimestamp)}`);
+        const data = res.data.payload.sort((a: EncodedPirRecord, b: EncodedPirRecord) => (a["timestamp"] - b["timestamp"]));
+
+       
+           return data.map((datum: EncodedPirRecord) => new PirRecord({
+                id: datum["record_id"],
+                pir: datum["pir_id"],
+                time: datum["timestamp"],
+                vols: datum["voltages"],
+            }))
+       
+
     }
 }
 

@@ -1,3 +1,4 @@
+import { DEFAULT_PIR_SAMPLE_TIMESTEP } from "@/constants";
 import { ID } from "@/interfaces/ID";
 import { IPirRecord } from "@/interfaces/IPirRecord";
 
@@ -72,9 +73,9 @@ export class PirRecord implements IPirRecord {
 
        
         const numberOfVols = this._vols.length;
-        for (let i = 0; i < 1000; i+= Math.floor(1000 / numberOfVols)) {
+        for (let i = 0; i < 1000; i+= DEFAULT_PIR_SAMPLE_TIMESTEP) {
             out.push({
-                timestamp: (this._time * 1000 + i),
+                timestamp: (this._time + i),
                 vol: this._vols[Math.floor(i / 10)]
             });
         }

@@ -99,6 +99,12 @@ export default function Page() {
                      capturing = {livelyChart}
                     // serverAddress={DEFAULT_SERVER_ADDRESS}
                     pirs={pirs}
+
+                    onError={() => {
+                        // when error, force to cancel
+
+                        setRecordAction("cancel");
+                    }}
                 />
             </Paper>
 

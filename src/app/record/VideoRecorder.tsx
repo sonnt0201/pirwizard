@@ -9,11 +9,15 @@ interface VideoRecorderProps {
 
     // Optional callback to notify the parent component of recording timestamps
     onRecordingTimestampUpdate?: (startTimestamp: number | null, currentTime: number | null) => void;
+
+ 
 }
 
 const VideoRecorder: React.FC<VideoRecorderProps> = ({
     recordAction,
     onRecordingTimestampUpdate,
+
+  
 }) => {
     // Ref to the Webcam component to access the video stream
     const webcamRef = useRef<Webcam>(null);
@@ -27,6 +31,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
     // State to store the timestamp when recording starts
     const [startTimestamp, setStartTimestamp] = useState<number | null>(null);
 
+    const endTimestamp = useRef<number>(0)
 
 
     // State to store the current recording time in milliseconds
@@ -63,15 +68,14 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         // Clear previous video data
         setCapturedChunks([]);
 
-        // Record the timestamp of when recording starts
-        const timestamp = Date.now();
-        setStartTimestamp(timestamp);
+       
+
+        endTimestamp.current = 0;
 
         // Reset the current recording time to 0
         setCurrentRecordingTime(0);
 
-        // Notify the parent component about the start timestamp and reset current time
-        onRecordingTimestampUpdate?.(timestamp, 0);
+       
 
         // Get the video stream from the Webcam component
         const mediaStream = webcamRef.current?.video?.srcObject as MediaStream;
@@ -90,8 +94,14 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
             }
         };
 
+
+         // Record the timestamp of when recording starts
+         const timestamp = Date.now();
+         setStartTimestamp(timestamp);
         // Start recording
         mediaRecorder.start();
+
+
 
         // Start updating the recording time every second
         recordingTimerRef.current = setInterval(() => {
@@ -102,6 +112,9 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
             });
         }, 1000);
 
+         // Notify the parent component about the start timestamp and reset current time
+         onRecordingTimestampUpdate?.(timestamp, 0);
+
         console.log("Recording started at:", new Date(timestamp).toISOString());
     };
 
@@ -110,6 +123,9 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
      * @param save - Whether to save the recorded video (true) or discard it (false).
      */
     const handleStopRecording = (save: boolean) => {
+
+        
+
         // Stop updating the recording time
         if (recordingTimerRef.current) {
             clearInterval(recordingTimerRef.current);
@@ -124,7 +140,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
 
         if (save === true) {
             // Stop the MediaRecorder
-
+            endTimestamp.current = Date.now()
             mediaRecorderRef.current?.stop();
 
         } else if (!save) {
@@ -151,9 +167,11 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         }
     }, [capturedChunks])
 
+
+    // download avaiable chunks
     const downloadAvailableRecord = () => {
         // Capture the timestamp when recording ends
-        const endTimestamp = Date.now();
+        
         console.log("Creating export video file ...")
         // Combine the video chunks into a single blob
         const blob = new Blob(capturedChunks, { type: "video/webm" });
@@ -162,7 +180,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         const url = URL.createObjectURL(blob);
 
         // Use the start and end timestamps as the file name
-        const fileName = `${startTimestamp}-${endTimestamp}.webm`;
+        const fileName = `${startTimestamp}-${endTimestamp.current}.webm`;
 
         // Create a hidden anchor element to trigger the download
         const anchor = document.createElement("a");
